@@ -7,7 +7,7 @@ A modern lb-phone password manager application for FiveM, built with a modern da
 - Save and edit user
 - Save and edit password
 - See and copy user and password
-- Autosql
+- Autoensure sql
 - Compatible with QBox
 
 # Requirements
