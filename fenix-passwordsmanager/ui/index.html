@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Passwords</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <main id="app" class="app" data-theme="dark">
+        <header class="topbar">
+            <div>
+                <h1>Password manager</h1>
+            </div>
+        </header>
+        <section id="tab-manage" class="panel active">
+            <section class="card summary-card">
+                <div class="row between">
+                    <h2>Saved password</h2>
+                </div>
+            </section>
+
+            <div id="entry-list" class="list"></div>
+            <div id="empty-state" class="empty-state card">
+                <strong>No saved apps yet</strong>
+                <p>Create your first entry from the Add tab.</p>
+            </div>
+        </section>
+    </main>
+
+    <div id="fab-save-wrap" class="fab-wrap">
+        <button id="fab-save" type="button" class="fab-save" aria-label="Add entry" title="Add entry">
+            <svg class="fab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+        </button>
+    </div>
+
+    <div id="add-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <div class="modal-grabber"></div>
+            <div class="modal-header">
+                <div>
+                    <p class="caption">Add</p>
+                    <h3>New entry</h3>
+                </div>
+                <button id="close-add" class="circle-btn close-add" type="button" aria-label="Close">✕</button>
+            </div>
+
+            <section class="card hero-card">
+                <h2>Store credentials safely</h2>
+            </section>
+
+            <form id="create-form" class="card form-card">
+                <div class="input-group">
+                    <label for="create-username">Username</label>
+                    <input id="create-username" type="text" name="username" placeholder="jdoe" maxlength="100" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="create-password">Password</label>
+                    <div class="password-row">
+                        <input id="create-password" type="password" name="password" placeholder="••••••••" maxlength="255" required />
+                        <button type="button" class="inline-btn toggle-password">Show</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="create-app-input">App</label>
+                    <input id="create-app-input" type="text" name="app_name" placeholder="Birdy" maxlength="100" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="create-notes">Notes</label>
+                    <textarea id="create-notes" name="notes" rows="4" placeholder="Private notes, PIN, recovery email..."></textarea>
+                </div>
+
+                <div class="modal-actions single-action">
+                    <button type="submit" class="primary-btn">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card">
+            <div class="modal-grabber"></div>
+            <div class="modal-header">
+                <div>
+                    <p class="caption">Editing...</p>
+                    <h3 id="modal-title">App</h3>
+                </div>
+                <button id="close-modal" class="circle-btn" type="button" aria-label="Close">✕</button>
+            </div>
+
+            <form id="edit-form" class="form-card plain">
+                <input type="hidden" name="id" />
+
+                <div class="input-group">
+                    <label for="edit-username">Username</label>
+                    <input id="edit-username" type="text" name="username" maxlength="100" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-app-input">App</label>
+                    <input id="edit-app-input" type="text" name="app_name" maxlength="100" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-password">Password</label>
+                    <div class="password-row">
+                        <input id="edit-password" type="password" name="password" maxlength="255" required />
+                        <button type="button" class="inline-btn toggle-password">Show</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="edit-notes">Notes</label>
+                    <textarea id="edit-notes" name="notes" rows="4"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="delete-entry" class="secondary-btn danger-btn">Delete</button>
+                    <button type="submit" class="primary-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="security-modal" class="modal hidden">
+        <div class="modal-backdrop"></div>
+        <div class="modal-card security-card">
+            <div class="modal-grabber"></div>
+            <div class="modal-header">
+                <div>
+                    <h3>Unlock</h3>
+                    <p class="subtle" id="security-subtitle">Use your phone PIN to continue.</p>
+                </div>
+            </div>
+            <form id="security-form" class="form-card plain">
+                <div class="input-group">
+                    <div class="password-row">
+                        <input id="security-pin" type="password" inputmode="numeric" name="pin" maxlength="32" autocomplete="off" placeholder="Enter phone PIN" />
+                        <button type="button" class="inline-btn toggle-password">Show</button>
+                    </div>
+                </div>
+                <div class="modal-actions single-action">
+                    <button type="submit" class="primary-btn">Unlock</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
