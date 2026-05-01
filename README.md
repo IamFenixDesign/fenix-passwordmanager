@@ -16,6 +16,8 @@ A modern lb-phone password manager application for FiveM, built with a modern da
 
 # Installation
 - Download or clone this resource into your server's resources folder.
+- Optional: enable Discord logs in `fenix-passwordsmanager/config.lua` by setting
+  `Config.DiscordLogs.enabled = true` and adding your webhook URL.
 
 # Join discord 
 for any help and upcoming updates and more
