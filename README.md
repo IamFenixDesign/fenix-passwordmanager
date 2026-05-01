@@ -16,3 +16,6 @@ A modern lb-phone password manager application for FiveM, built with a modern da
 
 # Installation
 - Download or clone this resource into your server's resources folder.
+
+# Join discord for any help and upcoming updates and more
+https://discord.gg/jpk6k6gkmk
