@@ -20,3 +20,20 @@ Config.Security = {
     requireUnlockForEdit = true,
     requireUnlockToRevealPassword = true,
 }
+
+Config.DiscordLogs = {
+    enabled = false,
+    webhook = '', -- Add your Discord webhook URL here.
+    botName = 'Fenix Password Manager',
+    avatarUrl = '',
+    color = 16753920,
+    includeIdentifiers = true,
+    includeEntryDetails = false,
+    events = {
+        createEntry = true,
+        updateEntry = true,
+        deleteEntry = true,
+        unlockSuccess = false,
+        unlockFailed = true,
+    }
+}
