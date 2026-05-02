@@ -113,104 +113,6 @@ local function getIdentifier(source)
     return ('player:%s'):format(source)
 end
 
-local function getDiscordLogConfig()
-    return Config and Config.DiscordLogs or {}
-end
-
-local function isDiscordLogEnabled(eventName)
-    local logConfig = getDiscordLogConfig()
-    if not logConfig.enabled or type(logConfig.webhook) ~= 'string' or logConfig.webhook == '' then
-        return false
-    end
-
-    if type(logConfig.events) ~= 'table' then
-        return true
-    end
-
-    return logConfig.events[eventName] == true
-end
-
-local function formatDiscordFieldValue(value)
-    value = tostring(value or 'N/A')
-
-    if #value > 1000 then
-        return value:sub(1, 997) .. '...'
-    end
-
-    return value
-end
-
-local function addDiscordField(fields, name, value, inline)
-    fields[#fields + 1] = {
-        name = name,
-        value = formatDiscordFieldValue(value),
-        inline = inline == true
-    }
-end
-
-local function sendDiscordLog(eventName, title, description, fields)
-    if not isDiscordLogEnabled(eventName) then
-        return
-    end
-
-    local logConfig = getDiscordLogConfig()
-    local payload = {
-        username = logConfig.botName or 'Fenix Password Manager',
-        avatar_url = logConfig.avatarUrl ~= '' and logConfig.avatarUrl or nil,
-        embeds = {
-            {
-                title = title,
-                description = description,
-                color = logConfig.color or 16753920,
-                fields = fields or {},
-                footer = {
-                    text = GetCurrentResourceName()
-                },
-                timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ')
-            }
-        }
-    }
-
-    PerformHttpRequest(logConfig.webhook, function(status)
-        status = tonumber(status) or 0
-
-        if status < 200 or status >= 300 then
-            print(('[fenix-passwordsmanager] Discord log failed (%s): HTTP %s'):format(eventName, status))
-        end
-    end, 'POST', json.encode(payload), {
-        ['Content-Type'] = 'application/json'
-    })
-end
-
-local function buildPlayerLogFields(source)
-    local fields = {}
-    addDiscordField(fields, 'Player', GetPlayerName(source) or ('ID %s'):format(source), true)
-    addDiscordField(fields, 'Server ID', source, true)
-
-    local logConfig = getDiscordLogConfig()
-    if logConfig.includeIdentifiers ~= false then
-        addDiscordField(fields, 'Identifier', getIdentifier(source), false)
-    end
-
-    return fields
-end
-
-local function addEntryLogFields(fields, entryId, appName, username, notes)
-    local logConfig = getDiscordLogConfig()
-    if logConfig.includeEntryDetails ~= true then
-        addDiscordField(fields, 'Entry ID', entryId or 'N/A', true)
-        return
-    end
-
-    addDiscordField(fields, 'Entry ID', entryId or 'N/A', true)
-    addDiscordField(fields, 'App', appName or 'N/A', true)
-    addDiscordField(fields, 'Username', username or 'N/A', true)
-
-    if notes and notes ~= '' then
-        addDiscordField(fields, 'Notes', notes, false)
-    end
-end
-
 local function sanitizeText(value)
     if type(value) ~= 'string' then
         return ''
@@ -218,6 +120,109 @@ local function sanitizeText(value)
 
     value = value:gsub('^%s+', ''):gsub('%s+$', '')
     return value
+end
+
+local function discordLogEntryCreated(source, appName, username)
+    if not FenixPasswordManagerDiscordShouldLog('entry_created') then
+        return
+    end
+    CreateThread(function()
+        local fields = FenixPasswordManagerPlayerFields(source)
+        fields[#fields + 1] = {
+            name = 'App',
+            value = FenixPasswordManagerDiscordSafe(appName),
+            inline = true,
+        }
+        if Config.DiscordLogs and Config.DiscordLogs.logUsername then
+            fields[#fields + 1] = {
+                name = 'Username',
+                value = FenixPasswordManagerDiscordSafe(username),
+                inline = true,
+            }
+        end
+        FenixPasswordManagerDiscordLog('entry_created', {
+            title = 'Password entry created',
+            fields = fields,
+        })
+    end)
+end
+
+local function discordLogEntryUpdated(source, entryId, appName, username)
+    if not FenixPasswordManagerDiscordShouldLog('entry_updated') then
+        return
+    end
+    CreateThread(function()
+        local fields = FenixPasswordManagerPlayerFields(source)
+        fields[#fields + 1] = {
+            name = 'Entry ID',
+            value = tostring(entryId),
+            inline = true,
+        }
+        fields[#fields + 1] = {
+            name = 'App',
+            value = FenixPasswordManagerDiscordSafe(appName),
+            inline = true,
+        }
+        if Config.DiscordLogs and Config.DiscordLogs.logUsername then
+            fields[#fields + 1] = {
+                name = 'Username',
+                value = FenixPasswordManagerDiscordSafe(username),
+                inline = true,
+            }
+        end
+        FenixPasswordManagerDiscordLog('entry_updated', {
+            title = 'Password entry updated',
+            fields = fields,
+        })
+    end)
+end
+
+local function discordLogEntryDeleted(source, entryId)
+    if not FenixPasswordManagerDiscordShouldLog('entry_deleted') then
+        return
+    end
+    CreateThread(function()
+        local fields = FenixPasswordManagerPlayerFields(source)
+        fields[#fields + 1] = {
+            name = 'Entry ID',
+            value = tostring(entryId),
+            inline = true,
+        }
+        FenixPasswordManagerDiscordLog('entry_deleted', {
+            title = 'Password entry deleted',
+            fields = fields,
+        })
+    end)
+end
+
+local function discordLogUnlockSuccess(source)
+    if not FenixPasswordManagerDiscordShouldLog('unlock_success') then
+        return
+    end
+    CreateThread(function()
+        FenixPasswordManagerDiscordLog('unlock_success', {
+            title = 'Password Manager unlocked',
+            fields = FenixPasswordManagerPlayerFields(source),
+        })
+    end)
+end
+
+local function discordLogUnlockFailed(source, reason)
+    if not FenixPasswordManagerDiscordShouldLog('unlock_failed') then
+        return
+    end
+    CreateThread(function()
+        local fields = FenixPasswordManagerPlayerFields(source)
+        fields[#fields + 1] = {
+            name = 'Reason',
+            value = FenixPasswordManagerDiscordSafe(reason),
+            inline = false,
+        }
+        FenixPasswordManagerDiscordLog('unlock_failed', {
+            title = 'Password Manager unlock failed',
+            fields = fields,
+        })
+    end)
 end
 
 local function getEntries(source)
@@ -259,30 +264,24 @@ registerCallback('fenix-passwordsmanager:getEntries', function(source)
 end)
 
 registerCallback('fenix-passwordsmanager:unlockWithPhonePin', function(source, data)
-    local function failUnlock(message)
-        local fields = buildPlayerLogFields(source)
-        addDiscordField(fields, 'Reason', message, false)
-        sendDiscordLog('unlockFailed', 'Password Manager unlock failed', 'A player failed to unlock the password manager.', fields)
-
-        return { ok = false, message = message }
-    end
-
     if not Config.Security or not Config.Security.enabled or not Config.Security.useLbPhonePin then
         return { ok = true, message = 'Security disabled.' }
     end
 
     if GetResourceState('lb-phone') ~= 'started' then
-        return failUnlock('LB Phone is not started.')
+        discordLogUnlockFailed(source, 'LB Phone is not started.')
+        return { ok = false, message = 'LB Phone is not started.' }
     end
 
     local pinAttempt = sanitizeText(data and data.pin)
     if pinAttempt == '' then
-        return failUnlock('Enter your phone PIN.')
+        return { ok = false, message = 'Enter your phone PIN.' }
     end
 
     local phoneNumber = getPlayerPhoneNumber(source)
     if not phoneNumber then
-        return failUnlock('No equipped LB Phone found.')
+        discordLogUnlockFailed(source, 'No equipped LB Phone found.')
+        return { ok = false, message = 'No equipped LB Phone found.' }
     end
 
     local ok, phonePin = pcall(function()
@@ -290,26 +289,27 @@ registerCallback('fenix-passwordsmanager:unlockWithPhonePin', function(source, d
     end)
 
     if not ok then
-        return failUnlock('Could not read LB Phone PIN.')
+        discordLogUnlockFailed(source, 'Could not read LB Phone PIN.')
+        return { ok = false, message = 'Could not read LB Phone PIN.' }
     end
 
     phonePin = tostring(phonePin or '')
     if phonePin == '' then
-        return failUnlock('No LB Phone PIN is configured for this phone.')
+        discordLogUnlockFailed(source, 'No LB Phone PIN is configured for this phone.')
+        return { ok = false, message = 'No LB Phone PIN is configured for this phone.' }
     end
 
     if pinAttempt ~= phonePin then
-        return failUnlock('Incorrect phone PIN.')
+        discordLogUnlockFailed(source, 'Incorrect phone PIN.')
+        return { ok = false, message = 'Incorrect phone PIN.' }
     end
+
+    discordLogUnlockSuccess(source)
 
     local settings = nil
     pcall(function()
         settings = exports['lb-phone']:GetSettings(phoneNumber)
     end)
-
-    local fields = buildPlayerLogFields(source)
-    addDiscordField(fields, 'Method', 'LB Phone PIN', true)
-    sendDiscordLog('unlockSuccess', 'Password Manager unlocked', 'A player unlocked the password manager.', fields)
 
     return {
         ok = true,
@@ -347,14 +347,12 @@ registerCallback('fenix-passwordsmanager:createEntry', function(source, data)
         return { ok = false, message = 'Password is required.' }
     end
 
-    local entryId = db.insert.await([[
+    db.insert.await([[
         INSERT INTO lb_passwordmanager (owner, app_name, username, password, notes)
         VALUES (?, ?, ?, ?, ?)
     ]], { owner, appName, username, password, notes })
 
-    local fields = buildPlayerLogFields(source)
-    addEntryLogFields(fields, entryId, appName, username, notes)
-    sendDiscordLog('createEntry', 'Password entry created', 'A player created a password manager entry.', fields)
+    discordLogEntryCreated(source, appName, username)
 
     return { ok = true, entries = getEntries(source) }
 end)
@@ -390,9 +388,7 @@ registerCallback('fenix-passwordsmanager:updateEntry', function(source, data)
         return { ok = false, message = 'Could not update the entry.' }
     end
 
-    local fields = buildPlayerLogFields(source)
-    addEntryLogFields(fields, entryId, appName, username, notes)
-    sendDiscordLog('updateEntry', 'Password entry updated', 'A player updated a password manager entry.', fields)
+    discordLogEntryUpdated(source, entryId, appName, username)
 
     return { ok = true, entries = getEntries(source) }
 end)
@@ -410,24 +406,13 @@ registerCallback('fenix-passwordsmanager:deleteEntry', function(source, data)
         return { ok = false, message = 'Invalid entry.' }
     end
 
-    local entry = db.query.await([[
-        SELECT app_name, username, notes
-        FROM lb_passwordmanager
-        WHERE id = ? AND owner = ?
-        LIMIT 1
-    ]], { entryId, owner })
-
     local affected = db.update.await('DELETE FROM lb_passwordmanager WHERE id = ? AND owner = ?', { entryId, owner })
 
     if affected == 0 then
         return { ok = false, message = 'Could not delete the entry.' }
     end
 
-    entry = entry and entry[1] or {}
-
-    local fields = buildPlayerLogFields(source)
-    addEntryLogFields(fields, entryId, entry.app_name, entry.username, entry.notes)
-    sendDiscordLog('deleteEntry', 'Password entry deleted', 'A player deleted a password manager entry.', fields)
+    discordLogEntryDeleted(source, entryId)
 
     return { ok = true, entries = getEntries(source) }
 end)

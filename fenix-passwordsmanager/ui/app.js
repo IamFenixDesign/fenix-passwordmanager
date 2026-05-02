@@ -214,7 +214,7 @@ const openSecurityModal = (reason) => {
             ? 'Use your LB Phone PIN to reveal the saved password.'
             : reason === 'edit'
                 ? 'Use your LB Phone PIN to edit this entry.'
-                : 'Use your hone PIN to open Password Manager.';
+                : 'Use your LB Phone PIN to open Password Manager.';
     }
     if (securityPinInput) {
         securityPinInput.value = '';

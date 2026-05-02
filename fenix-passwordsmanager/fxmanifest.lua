@@ -5,7 +5,7 @@ lua54 'yes'
 
 author 'FenixDesign'
 description 'Password Manager app for LB Phone'
-version '1.0.0'
+version '1.0.1'
 
 
 files {
@@ -20,6 +20,7 @@ shared_script 'config.lua'
 client_script 'client/cl_password.lua'
 
 server_scripts {
+    'server/discord.lua',
     'server/sv_password.lua',
     'server/version.lua'
 }

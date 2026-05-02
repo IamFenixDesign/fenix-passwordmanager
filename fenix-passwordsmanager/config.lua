@@ -21,19 +21,45 @@ Config.Security = {
     requireUnlockToRevealPassword = true,
 }
 
+--[[
+    Discord logs: each category has its own webhook URL.
+    Set enabled = false or leave url empty to skip that category.
+    Passwords and PIN attempts are never logged.
+]]
 Config.DiscordLogs = {
     enabled = true,
-    webhook = '', -- Add your Discord webhook URL here.
-    botName = 'Fenix Password Manager',
-    avatarUrl = '',
-    color = 16753920,
-    includeIdentifiers = true,
-    includeEntryDetails = true,
-    events = {
-        createEntry = true,
-        updateEntry = true,
-        deleteEntry = true,
-        unlockSuccess = true,
-        unlockFailed = true,
-    }
+    username = 'Password Manager',
+    avatar_url = '',
+    --- Append last 8 chars of license to embeds (set false to omit).
+    logLicenseTail = true,
+    --- Include username on create/update logs (never logs password).
+    logUsername = true,
+
+    categories = {
+        entry_created = {
+            enabled = true,
+            url = '',
+            color = 5763719,
+        },
+        entry_updated = {
+            enabled = true,
+            url = '',
+            color = 16776960,
+        },
+        entry_deleted = {
+            enabled = true,
+            url = '',
+            color = 15158332,
+        },
+        unlock_success = {
+            enabled = false,
+            url = '',
+            color = 3066993,
+        },
+        unlock_failed = {
+            enabled = true,
+            url = '',
+            color = 15158332,
+        },
+    },
 }
