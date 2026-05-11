@@ -36,7 +36,6 @@ end
 local function ensureDatabase()
     local db = getDb()
     if not db then
-        print('[fenix-passwordsmanager] oxmysql is not started. Database init skipped.')
         return false
     end
 
@@ -54,7 +53,6 @@ local function ensureDatabase()
         )
     ]])
 
-    print('[fenix-passwordsmanager] Database table checked/created successfully.')
     return true
 end
 
@@ -70,8 +68,6 @@ AddEventHandler('onResourceStart', function(resourceName)
             attempts = attempts + 1
             Wait(1000)
         end
-
-        print('[fenix-passwordsmanager] Failed to initialize database table after multiple attempts.')
     end)
 end)
 
@@ -88,7 +84,6 @@ RegisterNetEvent('fenix-passwordsmanager:triggerServerCallback', function(name, 
 
     local ok, result = pcall(cb, src, data)
     if not ok then
-        print(('[fenix-passwordsmanager] Server callback error (%s): %s'):format(name, result))
         TriggerClientEvent('fenix-passwordsmanager:serverCallbackResponse', src, requestId, {
             ok = false,
             message = 'Internal server error.'

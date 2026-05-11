@@ -5,7 +5,7 @@ lua54 'yes'
 
 author 'FenixDesign'
 description 'Password Manager app for LB Phone'
-version '1.0.1'
+version '1.0.1-1'
 
 
 files {

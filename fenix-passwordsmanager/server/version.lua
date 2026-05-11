@@ -1,7 +1,7 @@
 local CURRENT = GetResourceMetadata(GetCurrentResourceName(), 'version', 0) or "0.0.0"
 
-local GITHUB_VERSION    = "https://raw.githubusercontent.com/IamFenixDesign/version/refs/heads/main/fenix-passwordsmanager/password-version.txt"
-local GITHUB_CHANGELOG  = "https://raw.githubusercontent.com/IamFenixDesign/version/refs/heads/main/fenix-passwordsmanager/password-changelog.txt"
+local GITHUB_VERSION    = "https://raw.githubusercontent.com/IamFenixDesign/version/refs/heads/main/lb-passwords/password-version.txt"
+local GITHUB_CHANGELOG  = "https://raw.githubusercontent.com/IamFenixDesign/version/refs/heads/main/lb-passwords/password-changelog.txt"
 
 -- Cleans spaces, line breaks, and BOM if present
 local function cleanText(str)
